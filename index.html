@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Família Eikiti Sakaguti - Calendário e Genealogia</title>
+<style>
+/* ================================================= */
+/* 🎨 ESTILOS GERAIS */
+/* ================================================= */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f9; /* Fundo suave */
+}
+
+.titulo {
+    background: linear-gradient(135deg, #555555, #333333);
+    color: white;
+    width: 100%;
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px 0;
+    font-size: 2vw;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.botoes {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+button {
+    margin: 0 5px;
+    padding: 10px 15px;
+    font-size: 1.5vw;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* ================================================= */
+/* 📅 ESTILOS DO CALENDÁRIO */
+/* ================================================= */
+.calendario {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px; /* Reduzido o gap para melhor aproveitamento de espaço */
+    width: 100%;
+    max-width: 900px; /* Limite a largura para melhor visualização em telas grandes */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dia {
+    border: 1px solid #eee;
+    padding: 8px; /* Ajustado o padding */
+    text-align: center;
+    font-size: 1.2vw;
+    background-color: #fff;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    min-height: 80px; /* Altura mínima para melhor visualização dos eventos */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.dia:hover {
+    border-color: #333;
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Garante que o hover fique por cima */
+}
+
+.header {
+    font-weight: bold;
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+    padding: 10px 8px;
+}
+
+.sabado { background: linear-gradient(135deg, #f0f8ff, #e0f7fa); }
+.domingo { background: linear-gradient(135deg, #fff0f0, #ffebee); }
+
+.feriado, .feriado-estadual, .aniversario {
+    width: 100%;
+    padding: 2px 0;
+    margin-top: 2px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+/* Cores de Feriados */
+.feriado { background: linear-gradient(135deg, #ffecb3, #ffd700); color: #333; }
+.feriado-estadual { background: linear-gradient(135deg, #c8e6c9, #81c784); color: #333; }
+
+/* Cores de Aniversariantes */
+.aniversariante-2ger { background: linear-gradient(135deg, #b3e5fc, #03a9f4); color: white; } /* Filho(a) */
+.aniversariante-3ger { background: linear-gradient(135deg, #80cbc4, #009688); color: white; } /* Neto(a) */
+.aniversariante-4ger { background: linear-gradient(135deg, #a5d6a7, #4caf50); color: white; } /* Bisneto(a) */
+.aniversariante-outro { background: linear-gradient(135deg, #d1c4e9, #673ab7); color: white; } /* Outro */
+
+.hoje {
+    box-shadow: 0 0 0 3px red inset; /* Borda vermelha para o dia de hoje */
+    transform: scale(1.02);
+    font-weight: bold;
+    color: red;
+}
+
+.hoje .dia-numero {
+    font-size: 1.2em; /* Destaca o número do dia de hoje */
+}
+
+.tooltip { position: relative; display: block; width: 100%; }
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 20; /* Garante que o tooltip fique por cima */
+    bottom: 100%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9em;
+}
+
+.tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+/* ================================================= */
+/* 💡 ESTILOS DA LEGENDA */
+/* ================================================= */
+.legenda {
+    display: flex;
+    flex-wrap: wrap; /* Permite que a legenda se ajuste em telas menores */
+    justify-content: center;
+    margin-top: 10px;
+    padding: 5px 0;
+    max-width: 900px;
+}
+.legenda-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 10px;
+    font-size: 0.9em;
+}
+.legenda-cor {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #ccc;
+    margin-right: 5px;
+    border-radius: 3px;
+}
+
+/* ================================================= */
+/* 🌲 ESTILOS DA ÁRVORE GENEALÓGICA */
+/* ================================================= */
+#genealogyTree {
+    list-style-type: none;
+    padding-left: 0;
+    text-align: left;
+    max-width: 600px;
+    width: 90%;
+    margin: 20px auto;
+}
+
+#genealogyTree ul {
+    list-style-type: none;
+    padding-left: 20px;
+    border-left: 1px dashed #ccc;
+}
+
+#genealogyTree li {
+    cursor: pointer;
+    margin: 8px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 1.1em;
+    line-height: 1.4;
+}
+
+#genealogyTree li::before {
+    content: '\25B6'; /* Triângulo para indicar expandir */
+    position: absolute;
+    left: 0;
+    top: 3px;
+    font-size: 0.8em;
+    color: #007bff;
+    transition: transform 0.3s;
+}
+
+#genealogyTree li.expanded::before {
+    content: '\25BC'; /* Triângulo para indicar recolher */
+}
+
+#genealogyTree li:not(.has-children)::before {
+    content: '\2022'; /* Ponto para quem não tem filhos listados */
+    color: #555;
+    font-size: 1.2em;
+    top: 0;
+}
+
+.hidden { display: none; }
+
+/* ================================================= */
+/* 📱 AJUSTES PARA TELAS MENORES (Responsividade) */
+/* ================================================= */
+@media (max-width: 768px) {
+    .dia {
+        font-size: 3vw;
+        padding: 5px;
+        min-height: 60px;
+    }
+    .titulo { font-size: 6vw; }
+    button { font-size: 3vw; padding: 6px 10px; }
+    .calendario { max-width: 95%; }
+    .feriado, .feriado-estadual, .aniversario { font-size: 0.7em; }
+    .legenda-item { margin: 3px 5px; font-size: 0.8em; }
+    .legenda { justify-content: space-around; }
+}
+
+@media (max-width: 480px) {
+    .dia { font-size: 4vw; min-height: 50px; }
+    .titulo { font-size: 7vw; }
+    button { font-size: 4vw; padding: 4px 8px; }
+}
+</style>
+</head>
+<body>
+    <div class="botoes">
+        <button id="mesAnterior">Mês Anterior</button>
+        <button id="mesAtual">Mês Atual</button>
+        <button id="proximoMes">Próximo Mês</button>
+    </div>
+    <div class="titulo" id="titulo"></div>
+    <div id="calendario" class="calendario"></div>
+
+    <div class="legenda-container">
+        <div id="legenda-aniversarios" class="legenda">
+            <div class="legenda-item"><div class="legenda-cor aniversariante-2ger"></div>Filho(a)</div>
+            <div class="legenda-item"><div class="legenda-cor aniversariante-3ger"></div>Neto(a)</div>
+            <div class="legenda-item"><div class="legenda-cor aniversariante-4ger"></div>Bisneto(a)</div>
+            <div class="legenda-item"><div class="legenda-cor aniversariante-outro"></div>Outro</div>
+        </div>
+        <div id="legenda-feriados" class="legenda">
+            <div class="legenda-item"><div class="legenda-cor feriado"></div>Feriado Nacional</div>
+            <div class="legenda-item"><div class="legenda-cor feriado-estadual"></div>Feriado Estadual (MS)</div>
+            <div class="legenda-item"><div class="legenda-cor sabado"></div>Sábado</div>
+            <div class="legenda-item"><div class="legenda-cor domingo"></div>Domingo</div>
+        </div>
+    </div>
+    
+    <div class="titulo" id="Titulo_arvore">Árvore Genealógica (Clique para Expandir)</div>
+    
+    <ul class="tree" id="genealogyTree"></ul>
+
+    <script>
+        // =================================================
+        // 💾 DADOS (Aniversariantes e Feriados)
+        // =================================================
+
+        // Estrutura de dados aprimorada
+        const dadosAniversariantes = [
+            // Geração 1 (Ancestral Principal)
+            { d: '29-03', a: 1913, nomeCompleto: 'Eikiti Sakaguti', nomeAbreviado: 'Eikiti', p: '1', ascendente: 'Sakaguti' },
+
+            // Geração 2 (Filhos)
+            { d: '24-06', a: 1938, nomeCompleto: 'Emiko Sakaguti Kawamoto', nomeAbreviado: 'Emiko', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '30-09', a: 1939, nomeCompleto: 'Celso Eiiti Sakaguti', nomeAbreviado: 'Celso', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '17-09', a: 1941, nomeCompleto: 'Hélio Itiro Sakaguti', nomeAbreviado: 'Hélio', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '20-10', a: 1943, nomeCompleto: 'Paulo Hideioshi Sakaguti', nomeAbreviado: 'Paulo', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '01-06', a: 1945, nomeCompleto: 'Francisco Kishiro Sakaguti', nomeAbreviado: 'Francisco', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '05-05', a: 1947, nomeCompleto: 'Rosa Teruko Sakaguti Tanamati', nomeAbreviado: 'Rosa', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '10-04', a: 1949, nomeCompleto: 'Joaquim Sakaguti', nomeAbreviado: 'Juca', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '29-11', a: 1951, nomeCompleto: 'Lusia Mitiko Nishimura', nomeAbreviado: 'Mitiko', p: '2', ascendente: 'Eikiti Sakaguti' },
+            { d: '19-11', a: 1954, nomeCompleto: 'Mario Sakaguti', nomeAbreviado: 'Mário', p: '2', ascendente: 'Eikiti Sakaguti' },
+            
+            // Geração 3 (Netos) - Agrupados por ascendente
+            // Filhos da Emiko
+            { d: '26-08', a: 1960, nomeCompleto: 'Ercilia Tiemi Kawamoto', nomeAbreviado: 'Tiemi', p: '3', ascendente: 'Emiko Sakaguti Kawamoto' },
+            { d: '25-10', a: 1962, nomeCompleto: 'Alice Mitsue Sakaguti Kawamoto Ishioka', nomeAbreviado: 'Alice', p: '3', ascendente: 'Emiko Sakaguti Kawamoto' },
+            { d: '21-05', a: 1964, nomeCompleto: 'Henrique Yasuo Kawamoto', nomeAbreviado: 'Yasuo', p: '3', ascendente: 'Emiko Sakaguti Kawamoto' },
+            { d: '05-05', a: 1966, nomeCompleto: 'Moacir Kawamoto', nomeAbreviado: 'Moacir', p: '3', ascendente: 'Emiko Sakaguti Kawamoto' },
+            { d: '10-11', a: 1971, nomeCompleto: 'Mauro Kawamoto', nomeAbreviado: 'Mauro', p: '3', ascendente: 'Emiko Sakaguti Kawamoto' },
+
+            // Filhos do Celso
+            { d: '14-04', a: 1966, nomeCompleto: 'Roberto Eiji Sakaguti', nomeAbreviado: 'Beto', p: '3', ascendente: 'Celso Eiiti Sakaguti' },
+            { d: '22-02', a: 1968, nomeCompleto: 'Eduardo Shiguero Sakaguti', nomeAbreviado: 'Eduardo', p: '3', ascendente: 'Celso Eiiti Sakaguti' },
+            { d: '03-07', a: 1974, nomeCompleto: 'Edy Emerson Sakaguti', nomeAbreviado: 'Edy', p: '3', ascendente: 'Celso Eiiti Sakaguti' },
+
+            // Filhos do Hélio
+            { d: '06-02', a: 1976, nomeCompleto: 'Décio Setsuo Sakaguti', nomeAbreviado: 'Décio', p: '3', ascendente: 'Hélio Itiro Sakaguti' },
+            { d: '15-02', a: 1978, nomeCompleto: 'Ligia Tizue Sakaguti Rolim', nomeAbreviado: 'Ligia', p: '3', ascendente: 'Hélio Itiro Sakaguti' },
+            { d: '31-07', a: 1981, nomeCompleto: 'Cintia Emi Sakaguti', nomeAbreviado: 'Cintia', p: '3', ascendente: 'Hélio Itiro Sakaguti' },
+
+            // Filhos do Paulo
+            { d: '30-08', a: 1972, nomeCompleto: 'Solange Tieko Sakaguti', nomeAbreviado: 'Solange', p: '3', ascendente: 'Paulo Hideioshi Sakaguti' },
+            { d: '20-03', a: 1977, nomeCompleto: 'Paulo Hideioshi Sakaguti Filho', nomeAbreviado: 'Paulinho', p: '3', ascendente: 'Paulo Hideioshi Sakaguti' },
+
+            // Filhos do Francisco
+            { d: '22-09', a: 1980, nomeCompleto: 'Frank Villasanti Sakaguti', nomeAbreviado: 'Frank', p: '3', ascendente: 'Francisco Kishiro Sakaguti' },
+            { d: '15-12', a: 1981, nomeCompleto: 'Johnny Villasanti Sakaguti', nomeAbreviado: 'Johnny', p: '3', ascendente: 'Francisco Kishiro Sakaguti' },
+            { d: '23-12', a: 1983, nomeCompleto: 'Jonathan Villasanti Sakaguti', nomeAbreviado: 'Jonathan', p: '3', ascendente: 'Francisco Kishiro Sakaguti' },
+
+            // Filhos da Rosa
+            { d: '01-05', a: 1972, nomeCompleto: 'Carla Akemi Sakaguti Tanamati', nomeAbreviado: 'Carla', p: '3', ascendente: 'Rosa Teruko Sakaguti Tanamati' },
+            { d: '10-10', a: 1974, nomeCompleto: 'Katia Mieko Sakaguti Tanamati', nomeAbreviado: 'Katia', p: '3', ascendente: 'Rosa Teruko Sakaguti Tanamati' },
+            { d: '30-03', a: 1976, nomeCompleto: 'Cleide Yuri Sakaguti Tanamati', nomeAbreviado: 'Dinha', p: '3', ascendente: 'Rosa Teruko Sakaguti Tanamati' },
+
+            // Filhos da Lusia
+            { d: '02-10', a: 1980, nomeCompleto: 'Celio Ricardo Satoshi Nishimura', nomeAbreviado: 'Celio', p: '3', ascendente: 'Lusia Mitiko Nishimura' },
+            { d: '15-06', a: 1979, nomeCompleto: 'Leila Shisue Nishimura', nomeAbreviado: 'Leila', p: '3', ascendente: 'Lusia Mitiko Nishimura' },
+            { d: '27-12', a: 1982, nomeCompleto: 'Suzana Kazue Nishimura', nomeAbreviado: 'Suzana', p: '3', ascendente: 'Lusia Mitiko Nishimura' },
+
+            // Filhos do Mario
+            { d: '15-08', a: 1985, nomeCompleto: 'Ricardo Minami Sakaguti', nomeAbreviado: 'Ricardo', p: '3', ascendente: 'Mario Sakaguti' },
+            { d: '13-02', a: 1988, nomeCompleto: 'Fabricio Minami Sakaguti', nomeAbreviado: 'Fabricio', p: '3', ascendente: 'Mario Sakaguti' },
+            { d: '04-06', a: 1989, nomeCompleto: 'Aline Minami Sakaguti', nomeAbreviado: 'Aline', p: '3', ascendente: 'Mario Sakaguti' },
+
+            // Geração 4 (Bisnetos) - Adicionar mais para ter uma árvore mais rica
+            // Bisnetos da Emiko
+            { d: '23-03', a: 1986, nomeCompleto: 'Gladyson Sadao Ishioka', nomeAbreviado: 'Gladyson', p: '4', ascendente: 'Alice Mitsue Sakaguti Kawamoto Ishioka' },
+            { d: '20-01', a: 1991, nomeCompleto: 'Allyson Yugo Ishioka', nomeAbreviado: 'Allyson', p: '4', ascendente: 'Alice Mitsue Sakaguti Kawamoto Ishioka' },
+            { d: '01-11', a: 1990, nomeCompleto: 'Thayane Yumi Santos Kawamoto', nomeAbreviado: 'Yumi', p: '4', ascendente: 'Henrique Yasuo Kawamoto' },
+            { d: '18-12', a: 1999, nomeCompleto: 'Giuliana Yuri Mendes Kawamoto', nomeAbreviado: 'Giuliana', p: '4', ascendente: 'Henrique Yasuo Kawamoto' },
+            { d: '17-05', a: 1993, nomeCompleto: 'Vinicius Henrique Akyo Kawamoto', nomeAbreviado: 'Vinicius', p: '4', ascendente: 'Henrique Yasuo Kawamoto' },
+            { d: '19-10', a: 1992, nomeCompleto: 'Maisa Sayuri Okada Kawamoto', nomeAbreviado: 'Maisa', p: '4', ascendente: 'Moacir Kawamoto' },
+            { d: '25-12', a: 1999, nomeCompleto: 'Karine Kawamoto', nomeAbreviado: 'Karine', p: '4', ascendente: 'Moacir Kawamoto' },
+            { d: '00-00', a: 0000, nomeCompleto: 'Luisa Andrade Kawamoto', nomeAbreviado: 'Luisa', p: '4', ascendente: 'Mauro Kawamoto' },
+
+            // Bisnetos do Celso
+            { d: '03-05', a: 2005, nomeCompleto: 'Camila Yamazato Sakaguti', nomeAbreviado: 'Camila', p: '4', ascendente: 'Roberto Eiji Sakaguti' },
+
+            // Bisnetos do Hélio
+            { d: '21-08', a: 2013, nomeCompleto: 'Elena', nomeAbreviado: 'Elena', p: '4', ascendente: 'Décio Setsuo Sakaguti' },
+            { d: '21-02', a: 2017, nomeCompleto: 'Enrique', nomeAbreviado: 'Enrique', p: '4', ascendente: 'Décio Setsuo Sakaguti' },
+            { d: '15-06', a: 2009, nomeCompleto: 'Igor', nomeAbreviado: 'Igor', p: '4', ascendente: 'Ligia Tizue Sakaguti Rolim' },
+            { d: '01-06', a: 2016, nomeCompleto: 'Giovana', nomeAbreviado: 'Giovana', p: '4', ascendente: 'Ligia Tizue Sakaguti Rolim' },
+            { d: '15-08', a: 2014, nomeCompleto: 'Gustavo', nomeAbreviado: 'Gustavo', p: '4', ascendente: 'Cintia Emi Sakaguti' },
+            { d: '09-03', a: 2017, nomeCompleto: 'Matheus', nomeAbreviado: 'Matheus', p: '4', ascendente: 'Cintia Emi Sakaguti' },
+            { d: '31-12', a: 2020, nomeCompleto: 'Lucas', nomeAbreviado: 'Lucas', p: '4', ascendente: 'Cintia Emi Sakaguti' },
+
+            // Bisnetos do Paulo
+            { d: '22-07', a: 1993, nomeCompleto: 'Ana Carolina Sakaguti Taube', nomeAbreviado: 'Carol', p: '4', ascendente: 'Solange Tieko Sakaguti' },
+            { d: '04-07', a: 1977, nomeCompleto: 'Vitor Miguita Sakaguti', nomeAbreviado: 'Vitor', p: '4', ascendente: 'Paulo Hideioshi Sakaguti Filho' },
+
+            // Bisnetos do Francisco
+            { d: '24-01', a: 2017, nomeCompleto: 'Maria Fernanda Villasanti Lopez', nomeAbreviado: 'Maria Fernanda', p: '4', ascendente: 'Frank Villasanti Sakaguti' },
+            { d: '01-11', a: 2019, nomeCompleto: 'Joaquim Villasanti Lopez', nomeAbreviado: 'Joaquim', p: '4', ascendente: 'Frank Villasanti Sakaguti' },
+
+            // Bisnetos da Rosa
+            { d: '30-01', a: 1997, nomeCompleto: 'Luis Augusto Tanamati Fernandes', nomeAbreviado: 'Luis Augusto', p: '4', ascendente: 'Carla Akemi Sakaguti Tanamati' },
+            { d: '21-12', a: 2000, nomeCompleto: 'Guilherme Tanamati Fernandes', nomeAbreviado: 'Guilherme', p: '4', ascendente: 'Carla Akemi Sakaguti Tanamati' },
+            { d: '14-11', a: 2008, nomeCompleto: 'Sarah Sumie Tanamati Pedroso', nomeAbreviado: 'Sarah', p: '4', ascendente: 'Katia Mieko Sakaguti Tanamati' },
+            { d: '20-08', a: 2012, nomeCompleto: 'Flavia Yumi Tanamati Pedroso', nomeAbreviado: 'Flavia', p: '4', ascendente: 'Katia Mieko Sakaguti Tanamati' },
+
+            // Bisnetos da Lusia
+            { d: '27-03', a: 2001, nomeCompleto: 'Fernanda Nishimura', nomeAbreviado: 'Fernanda', p: '4', ascendente: 'Celio Ricardo Satoshi Nishimura' },
+            { d: '25-08', a: 2003, nomeCompleto: 'Bruno Nishimura', nomeAbreviado: 'Bruno', p: '4', ascendente: 'Celio Ricardo Satoshi Nishimura' },
+            { d: '10-11', a: 2011, nomeCompleto: 'Rafael Hiroshi Nishimura Cordeiro', nomeAbreviado: 'Rafael', p: '4', ascendente: 'Leila Shisue Nishimura' },
+            { d: '07-05', a: 2014, nomeCompleto: 'Laura Mayumi Nishimura Cordeiro', nomeAbreviado: 'Laura', p: '4', ascendente: 'Leila Shisue Nishimura' },
+            { d: '26-06', a: 2022, nomeCompleto: 'Heitor Nishimura Santos', nomeAbreviado: 'Heitor', p: '4', ascendente: 'Suzana Kazue Nishimura' },
+        ];
+
+        // Mapeia aniversariantes por data
+        const aniversariantesPorData = dadosAniversariantes.reduce((acc, pessoa) => {
+            if (!acc[pessoa.d]) { acc[pessoa.d] = []; }
+            acc[pessoa.d].push(pessoa);
+            return acc;
+        }, {});
+        
+        // Feriados fixos (independentes do ano)
+        const feriadosFixos = {
+            '01-01': 'Ano Novo', '21-04': 'Tiradentes', '01-05': 'Dia do Trabalhador', 
+            '07-09': 'Independência do Brasil', '12-10': 'Nossa Senhora Aparecida', 
+            '02-11': 'Finados', '15-11': 'Proclamação da República', 
+            '20-11': 'Dia Nacional de Zumbi e da Consciência Negra', '25-12': 'Natal',
+        };
+
+        // Feriados estaduais (MS)
+        const feriadosEstaduais = {
+            '11-10': 'Criação do Estado de MS', '28-10': 'Dia do Servidor Público Estadual',
+        };
+
+        // =================================================
+        // ⚙️ FUNÇÕES DE CÁLCULO
+        // =================================================
+        
+        /**
+         * Calcula a data da Páscoa para um dado ano (Algoritmo de Computus Eclesiástico).
+         * @param {number} ano - O ano.
+         * @returns {Date} A data da Páscoa.
+         */
+        function calcularPascoa(ano) {
+            const a = ano % 19; const b = Math.floor(ano / 100); const c = ano % 100;
+            const d = Math.floor(b / 4); const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4); const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const mes = Math.floor((h + l - 7 * m + 114) / 31);
+            const dia = (h + l - 7 * m + 114) % 31 + 1;
+            return new Date(ano, mes - 1, dia); // Meses em JavaScript são baseados em zero
+        }
+
+        /**
+         * Adiciona ou subtrai dias de uma data.
+         * @param {Date} data - A data inicial.
+         * @param {number} dias - O número de dias a adicionar (pode ser negativo).
+         * @returns {Date} A nova data.
+         */
+        function adicionarDias(data, dias) {
+            const novaData = new Date(data);
+            novaData.setDate(novaData.getDate() + dias);
+            return novaData;
+        }
+
+        /**
+         * Formata o dia e mês no formato "dd-mm".
+         * @param {number} dia - O dia.
+         * @param {number} mes - O mês (0-11).
+         * @returns {string} A data formatada.
+         */
+        function formatarData(dia, mes) {
+            return `${String(dia).padStart(2, '0')}-${String(mes + 1).padStart(2, '0')}`;
+        }
+
+        /**
+         * Calcula feriados móveis para o ano.
+         * @param {number} ano - O ano.
+         * @returns {Object.<string, string>} Objeto de feriados móveis.
+         */
+        function calcularFeriadosMoveis(ano) {
+            const dataPascoa = calcularPascoa(ano);
+            const carnaval = adicionarDias(dataPascoa, -47); // 47 dias antes da Páscoa
+            const sextaFeiraSanta = adicionarDias(dataPascoa, -2); // 2 dias antes da Páscoa
+            const corpusChristi = adicionarDias(dataPascoa, 60); // 60 dias após a Páscoa
+
+            const feriadosMoveis = {};
+            feriadosMoveis[formatarData(dataPascoa.getDate(), dataPascoa.getMonth())] = 'Páscoa';
+            feriadosMoveis[formatarData(carnaval.getDate(), carnaval.getMonth())] = 'Carnaval';
+            // feriadosMoveis[formatarData(adicionarDias(carnaval, 1).getDate(), adicionarDias(carnaval, 1).getMonth())] = 'Quarta-feira de Cinzas'; // Não é feriado nacional oficial
+            feriadosMoveis[formatarData(sextaFeiraSanta.getDate(), sextaFeiraSanta.getMonth())] = 'Sexta-feira Santa';
+            feriadosMoveis[formatarData(corpusChristi.getDate(), corpusChristi.getMonth())] = 'Corpus Christi';
+
+            return feriadosMoveis;
+        }
+
+        /**
+         * Calcula a idade.
+         * @param {number} anoNascimento - Ano de nascimento.
+         * @param {number} anoAtual - Ano atual do calendário.
+         * @returns {string} Idade.
+         */
+        function calcularIdade(anoNascimento, anoAtual) {
+            const idade = anoAtual - anoNascimento;
+            return `${idade} anos`;
+        }
+
+        // =================================================
+        // 🗓️ FUNÇÕES DO CALENDÁRIO
+        // =================================================
+        
+        let dataAtual = new Date();
+        let mesAtual = dataAtual.getMonth();
+        let anoAtual = dataAtual.getFullYear();
+        const hoje = new Date();
+        const hojeData = `${String(hoje.getDate()).padStart(2, '0')}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${hoje.getFullYear()}`;
+
+        /**
+         * Atualiza o título do calendário.
+         */
+        function atualizarTitulo() {
+            const meses = [
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+            ];
+            document.getElementById('titulo').innerText = `${meses[mesAtual]} de ${anoAtual}`;
+        }
+
+        /**
+         * Cria e preenche o calendário.
+         * @param {number} mes - Mês (0-11).
+         * @param {number} ano - Ano.
+         */
+        function criarCalendario(mes, ano) {
+            const feriadosMoveis = calcularFeriadosMoveis(ano);
+            const feriadosNacionais = { ...feriadosFixos, ...feriadosMoveis };
+
+            const diasDoMes = new Date(ano, mes + 1, 0).getDate();
+            let primeiroDia = new Date(ano, mes, 1).getDay(); // 0=Dom, 1=Seg...
+
+            const calendario = document.getElementById('calendario');
+            calendario.innerHTML = '';
+
+            const diasDaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            diasDaSemana.forEach(dia => {
+                const div = document.createElement('div');
+                div.className = 'dia header';
+                div.innerText = dia;
+                calendario.appendChild(div);
+            });
+
+            // Preenche os espaços vazios do início do mês
+            for (let i = 0; i < primeiroDia; i++) {
+                calendario.appendChild(document.createElement('div'));
+            }
+
+            const mesAtualFormatado = String(mes + 1).padStart(2, '0');
+
+            for (let dia = 1; dia <= diasDoMes; dia++) {
+                const dataChave = `${String(dia).padStart(2, '0')}-${mesAtualFormatado}`;
+                const div = document.createElement('div');
+                div.className = 'dia';
+
+                if (primeiroDia === 0) div.classList.add('domingo');
+                else if (primeiroDia === 6) div.classList.add('sabado');
+
+                // Adiciona o número do dia
+                const diaNumero = document.createElement('div');
+                diaNumero.className = 'dia-numero';
+                diaNumero.innerText = dia;
+                div.appendChild(diaNumero);
+
+                const ehHoje = dia === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear();
+                if (ehHoje) div.classList.add('hoje');
+
+                // Feriados Estaduais
+                if (feriadosEstaduais[dataChave]) {
+                    const divFeriado = criarElementoEvento('feriado-estadual', feriadosEstaduais[dataChave]);
+                    div.appendChild(divFeriado);
+                }
+
+                // Feriados Nacionais
+                if (feriadosNacionais[dataChave]) {
+                    const divFeriado = criarElementoEvento('feriado', feriadosNacionais[dataChave]);
+                    div.appendChild(divFeriado);
+                }
+                
+                // Aniversariantes
+                if (aniversariantesPorData[dataChave]) {
+                    aniversariantesPorData[dataChave].forEach(pessoa => {
+                        const idade = calcularIdade(pessoa.a, ano);
+                        const classeParentesco = `aniversariante-${pessoa.p}ger`;
+                        const divAniversario = criarElementoEvento(classeParentesco, pessoa.nomeAbreviado, idade);
+                        div.appendChild(divAniversario);
+                    });
+                }
+
+                calendario.appendChild(div);
+                primeiroDia = (primeiroDia + 1) % 7;
+            }
+        }
+
+        /**
+         * Cria um elemento de evento (feriado ou aniversário) com tooltip.
+         * @param {string} classe - Classe CSS para cor.
+         * @param {string} texto - Texto principal (nome ou feriado).
+         * @param {string} [tooltipText] - Texto do tooltip (idade).
+         * @returns {HTMLElement} O elemento div do evento.
+         */
+        function criarElementoEvento(classe, texto, tooltipText) {
+            const div = document.createElement('div');
+            div.classList.add('tooltip', classe);
+            div.innerHTML = texto;
+            
+            if (tooltipText) {
+                const span = document.createElement('span');
+                span.classList.add('tooltiptext');
+                span.textContent = tooltipText;
+                div.appendChild(span);
+            }
+            return div;
+        }
+
+// =================================================
+// 🌲 FUNÇÕES DA ÁRVORE GENEALÓGICA
+// =================================================
+
+/**
+ * Cria a estrutura de lista aninhada da árvore genealógica.
+ * @param {string} ancestral - O nome completo do ancestral para filtrar.
+ * @returns {HTMLUListElement} A sub-árvore.
+ */
+function criarArvore(ancestral = "Sakaguti") {
+    const arvore = document.createElement("ul");
+    // Obtém o ano atual para calcular a idade
+    const anoCorrente = new Date().getFullYear(); 
+
+    // Filtra e ordena pelo ano de nascimento
+    const filhos = dadosAniversariantes
+        .filter(p => p.ascendente === ancestral)
+        .sort((a, b) => a.a - b.a);
+
+    filhos.forEach(pessoa => {
+        const item = document.createElement("li");
+        
+        // **Cálculo e Exibição da Idade Atualizada**
+        let textoIdade = '';
+        if (pessoa.a > 0) { // Se o ano for válido
+            const idade = anoCorrente - pessoa.a;
+            textoIdade = ` (${pessoa.a}, ${idade} anos)`;
+        } else {
+            // Caso especial para datas '00-00-0000'
+            textoIdade = ' (Data Desconhecida)';
+        }
+        
+        item.textContent = `${pessoa.nomeCompleto}${textoIdade}`;
+        // Fim da modificação para inclusão da idade
+
+        // Verifica se a pessoa tem filhos listados para definir o ícone
+        const temFilhos = dadosAniversariantes.some(p => p.ascendente === pessoa.nomeCompleto);
+
+        if (temFilhos) {
+            item.classList.add("has-children");
+            item.onclick = function(event) {
+                event.stopPropagation();
+                let subArvore = item.querySelector("ul");
+                if (subArvore) {
+                    subArvore.remove();
+                    item.classList.remove("expanded");
+                } else {
+                    subArvore = criarArvore(pessoa.nomeCompleto);
+                    if (subArvore.children.length > 0) {
+                        item.appendChild(subArvore);
+                        item.classList.add("expanded");
+                    }
+                }
+            };
+        }
+        arvore.appendChild(item);
+    });
+    return arvore;
+}
+
+// =================================================
+// 🖱️ LISTENERS DE EVENTOS (MANTENHA ESTA SEÇÃO IGUAL)
+// =================================================
+
+document.getElementById('mesAnterior').addEventListener('click', () => {
+    mesAtual--;
+    if (mesAtual < 0) { mesAtual = 11; anoAtual--; }
+    atualizarTitulo();
+    criarCalendario(mesAtual, anoAtual);
+});
+
+document.getElementById('mesAtual').addEventListener('click', () => {
+    mesAtual = hoje.getMonth();
+    anoAtual = hoje.getFullYear();
+    atualizarTitulo();
+    criarCalendario(mesAtual, anoAtual);
+});
+
+document.getElementById('proximoMes').addEventListener('click', () => {
+    mesAtual++;
+    if (mesAtual > 11) { mesAtual = 0; anoAtual++; }
+    atualizarTitulo();
+    criarCalendario(mesAtual, anoAtual);
+});
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    atualizarTitulo();
+    criarCalendario(mesAtual, anoAtual);
+    // Cria a árvore com a idade atualizada
+    document.getElementById("genealogyTree").appendChild(criarArvore());
+});
+</script>
+</body>
+</html>
